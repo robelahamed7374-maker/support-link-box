@@ -3,6 +3,7 @@ import {
   db,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   doc,
@@ -25,6 +26,7 @@ if (loginForm) {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      alert("Login Successful");
       window.location.href = "dashboard.html";
     } catch (err) {
       alert(err.message);
@@ -50,7 +52,9 @@ if (signupForm) {
         links: []
       });
 
+      alert("Account Created");
       window.location.href = "index.html";
+
     } catch (err) {
       alert(err.message);
     }
@@ -58,72 +62,24 @@ if (signupForm) {
 }
 
 
-// ================= ADD LINK =================
-const addBtn = document.getElementById("addLink");
+// ================= RESET PASSWORD =================
+const forgotForm = document.getElementById("forgotForm");
 
-if (addBtn) {
-  addBtn.addEventListener("click", async () => {
+if (forgotForm) {
+  forgotForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const name = document.getElementById("linkName").value;
-    const url = document.getElementById("linkUrl").value;
+    const email = document.getElementById("resetEmail").value;
 
-    const user = auth.currentUser;
-
-    if (!user) return;
-
-    const userRef = doc(db, "users", user.uid);
-
-    await updateDoc(userRef, {
-      links: arrayUnion({ name, url })
-    });
-
-    loadLinks();
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Reset Email Sent");
+      window.location.href = "index.html";
+    } catch (err) {
+      alert(err.message);
+    }
   });
 }
-
-
-// ================= LOAD LINKS =================
-async function loadLinks() {
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef);
-
-  const list = document.getElementById("linkList");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  if (snap.exists()) {
-    const links = snap.data().links || [];
-
-    links.forEach((item) => {
-      const div = document.createElement("div");
-
-      div.innerHTML = `
-        <p>${item.name}</p>
-        <a href="${item.url}" target="_blank">${item.url}</a>
-      `;
-
-      list.appendChild(div);
-    });
-  }
-}
-
-
-// ================= AUTH CHECK =================
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    if (window.location.pathname.includes("dashboard")) {
-      loadLinks();
-    }
-  } else {
-    if (window.location.pathname.includes("dashboard")) {
-      window.location.href = "index.html";
-    }
-  }
-});
 
 
 // ================= LOGOUT =================
