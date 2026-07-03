@@ -1,13 +1,8 @@
-
-// ================= FIREBASE INIT =================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-  onAuthStateChanged
+  signInWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -23,85 +18,35 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 
-// ================= SIGNUP =================
-const signupForm = document.getElementById("signupForm");
+// LOGIN
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Registration Successful");
-      window.location.href = "index.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    alert("Login Success");
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
+  }
+});
 
 
-// ================= LOGIN =================
-const loginForm = document.getElementById("loginForm");
+// SIGNUP
+document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-
-      alert("Login Successful");
-
-      window.location.href = "dashboard.html";
-
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
-
-
-// ================= RESET PASSWORD =================
-const forgotForm = document.getElementById("forgotForm");
-
-if (forgotForm) {
-  forgotForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("resetEmail").value;
-
-    try {
-      await sendPasswordResetEmail(auth, email);
-      alert("Reset Email Sent");
-      window.location.href = "index.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
-
-
-// ================= LOGOUT =================
-const logoutBtn = document.getElementById("logoutBtn");
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", async () => {
-    await signOut(auth);
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    alert("Account Created");
     window.location.href = "index.html";
-  });
-}
-
-
-// ================= AUTO CHECK LOGIN =================
-onAuthStateChanged(auth, (user) => {
-  if (!user && window.location.pathname.includes("dashboard")) {
-    window.location.href = "index.html";
+  } catch (err) {
+    alert(err.message);
   }
 });
