@@ -1,15 +1,23 @@
-// Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
 
-// Firebase Config
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBf06m_Y9i8ieLhTrML1cJipAU52_aFebg",
   authDomain: "support-link-box.firebaseapp.com",
@@ -19,15 +27,21 @@ const firebaseConfig = {
   appId: "1:1067338452471:web:912353ac976dce6927b2f2"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 
-// Export
-window.auth = auth;
-window.firebaseFunctions = {
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+export {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  signOut
+  signOut,
+  onAuthStateChanged,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
 };
