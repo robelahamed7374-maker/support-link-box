@@ -3,16 +3,15 @@ import {
   db,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
   doc,
   setDoc,
   getDoc,
   updateDoc,
-  arrayUnion,
-  arrayRemove
+  arrayUnion
 } from "./firebase.js";
+
 
 // ================= LOGIN =================
 const loginForm = document.getElementById("loginForm");
@@ -21,8 +20,8 @@ if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = email.value;
-    const password = password.value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
@@ -32,6 +31,7 @@ if (loginForm) {
     }
   });
 }
+
 
 // ================= SIGNUP =================
 const signupForm = document.getElementById("signupForm");
@@ -57,6 +57,7 @@ if (signupForm) {
   });
 }
 
+
 // ================= ADD LINK =================
 const addBtn = document.getElementById("addLink");
 
@@ -73,19 +74,16 @@ if (addBtn) {
     const userRef = doc(db, "users", user.uid);
 
     await updateDoc(userRef, {
-      links: arrayUnion({
-        name,
-        url
-      })
+      links: arrayUnion({ name, url })
     });
 
     loadLinks();
   });
 }
 
+
 // ================= LOAD LINKS =================
 async function loadLinks() {
-
   const user = auth.currentUser;
   if (!user) return;
 
@@ -93,31 +91,40 @@ async function loadLinks() {
   const snap = await getDoc(userRef);
 
   const list = document.getElementById("linkList");
-
-  if (!snap.exists()) return;
-
-  const links = snap.data().links || [];
+  if (!list) return;
 
   list.innerHTML = "";
 
-  links.forEach((item) => {
-    const div = document.createElement("div");
+  if (snap.exists()) {
+    const links = snap.data().links || [];
 
-    div.innerHTML = `
-      <p style="color:white">${item.name}</p>
-      <a href="${item.url}" target="_blank">${item.url}</a>
-    `;
+    links.forEach((item) => {
+      const div = document.createElement("div");
 
-    list.appendChild(div);
-  });
+      div.innerHTML = `
+        <p>${item.name}</p>
+        <a href="${item.url}" target="_blank">${item.url}</a>
+      `;
+
+      list.appendChild(div);
+    });
+  }
 }
+
 
 // ================= AUTH CHECK =================
 onAuthStateChanged(auth, (user) => {
-  if (user && window.location.pathname.includes("dashboard")) {
-    loadLinks();
+  if (user) {
+    if (window.location.pathname.includes("dashboard")) {
+      loadLinks();
+    }
+  } else {
+    if (window.location.pathname.includes("dashboard")) {
+      window.location.href = "index.html";
+    }
   }
 });
+
 
 // ================= LOGOUT =================
 const logoutBtn = document.getElementById("logoutBtn");
