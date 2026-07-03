@@ -1,249 +1,130 @@
-// Login
+import {
+  auth,
+  db,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove
+} from "./firebase.js";
+
+// ================= LOGIN =================
 const loginForm = document.getElementById("loginForm");
 
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const email = email.value;
+    const password = password.value;
 
     try {
-      await firebaseFunctions.signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-      alert("Login Successful!");
-
+      await signInWithEmailAndPassword(auth, email, password);
       window.location.href = "dashboard.html";
-
-    } catch (error) {
-      alert(error.message);
+    } catch (err) {
+      alert(err.message);
     }
   });
 }
 
-// Signup
+// ================= SIGNUP =================
 const signupForm = document.getElementById("signupForm");
 
 if (signupForm) {
-
   signupForm.addEventListener("submit", async (e) => {
-
     e.preventDefault();
 
     const email = document.getElementById("email").value;
-
     const password = document.getElementById("password").value;
 
-    const confirm = document.getElementById("confirm").value;
-
-    if(password!==confirm){
-
-      alert("Password Doesn't Match");
-
-      return;
-
-    }
-
-    try{
-
-      await firebaseFunctions.createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-      alert("Account Created Successfully");
-
-      window.location.href="index.html";
-
-    }catch(err){
-
-      alert(err.message);
-
-    }
-
-  });
-
-}
-// ===========================
-// Forgot Password
-// ===========================
-const forgotForm = document.getElementById("forgotForm");
-
-if (forgotForm) {
-
-  forgotForm.addEventListener("submit", async (e) => {
-
-    e.preventDefault();
-
-    const email = document.getElementById("resetEmail").value;
-
     try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
 
-      await firebaseFunctions.sendPasswordResetEmail(auth, email);
-
-      alert("Password reset email sent.");
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        links: []
+      });
 
       window.location.href = "index.html";
-
     } catch (err) {
-
       alert(err.message);
-
     }
-
   });
-
 }
 
-// ===========================
-// Logout
-// ===========================
+// ================= ADD LINK =================
+const addBtn = document.getElementById("addLink");
+
+if (addBtn) {
+  addBtn.addEventListener("click", async () => {
+
+    const name = document.getElementById("linkName").value;
+    const url = document.getElementById("linkUrl").value;
+
+    const user = auth.currentUser;
+
+    if (!user) return;
+
+    const userRef = doc(db, "users", user.uid);
+
+    await updateDoc(userRef, {
+      links: arrayUnion({
+        name,
+        url
+      })
+    });
+
+    loadLinks();
+  });
+}
+
+// ================= LOAD LINKS =================
+async function loadLinks() {
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef);
+
+  const list = document.getElementById("linkList");
+
+  if (!snap.exists()) return;
+
+  const links = snap.data().links || [];
+
+  list.innerHTML = "";
+
+  links.forEach((item) => {
+    const div = document.createElement("div");
+
+    div.innerHTML = `
+      <p style="color:white">${item.name}</p>
+      <a href="${item.url}" target="_blank">${item.url}</a>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+// ================= AUTH CHECK =================
+onAuthStateChanged(auth, (user) => {
+  if (user && window.location.pathname.includes("dashboard")) {
+    loadLinks();
+  }
+});
+
+// ================= LOGOUT =================
 const logoutBtn = document.getElementById("logoutBtn");
 
 if (logoutBtn) {
-
   logoutBtn.addEventListener("click", async () => {
-
-    try {
-
-      await firebaseFunctions.signOut(auth);
-
-      alert("Logged Out");
-
-      window.location.href = "index.html";
-
-    } catch (err) {
-
-      alert(err.message);
-
-    }
-
+    await signOut(auth);
+    window.location.href = "index.html";
   });
-
 }
-
-// ===========================
-// Support Link Box
-// ===========================
-
-const addBtn = document.getElementById("addLink");
-
-const list = document.getElementById("linkList");
-
-function loadLinks() {
-
-    if (!list) return;
-
-    let links = JSON.parse(localStorage.getItem("supportLinks")) || [];
-
-    list.innerHTML = "";
-
-    if (links.length === 0) {
-
-        list.innerHTML =
-        "<p style='color:white;text-align:center;'>No Support Links Yet</p>";
-
-        return;
-
-    }
-
-    links.forEach((item,index)=>{
-
-        const div=document.createElement("div");
-
-        div.style.marginBottom="15px";
-        div.style.padding="10px";
-        div.style.border="1px solid cyan";
-        div.style.borderRadius="10px";
-        div.style.color="white";
-
-        div.innerHTML=`
-
-        <b>${item.name}</b><br>
-
-        <a href="${item.url}" target="_blank" style="color:cyan;">
-        ${item.url}
-        </a>
-
-        <br><br>
-
-        <button onclick="copyLink('${item.url}')">
-        Copy
-        </button>
-
-        <button onclick="deleteLink(${index})">
-        Delete
-        </button>
-
-        `;
-
-        list.appendChild(div);
-
-    });
-
-}
-
-if(addBtn){
-
-addBtn.addEventListener("click",()=>{
-
-const name=document.getElementById("linkName").value;
-
-const url=document.getElementById("linkUrl").value;
-
-if(name===""||url===""){
-
-alert("Please Fill All Fields");
-
-return;
-
-}
-
-let links=JSON.parse(localStorage.getItem("supportLinks"))||[];
-
-links.push({
-
-name:name,
-
-url:url
-
-});
-
-localStorage.setItem("supportLinks",JSON.stringify(links));
-
-document.getElementById("linkName").value="";
-
-document.getElementById("linkUrl").value="";
-
-loadLinks();
-
-});
-
-}
-
-function deleteLink(index){
-
-let links=JSON.parse(localStorage.getItem("supportLinks"))||[];
-
-links.splice(index,1);
-
-localStorage.setItem("supportLinks",JSON.stringify(links));
-
-loadLinks();
-
-}
-
-function copyLink(link){
-
-navigator.clipboard.writeText(link);
-
-alert("Link Copied");
-
-}
-
-loadLinks();
