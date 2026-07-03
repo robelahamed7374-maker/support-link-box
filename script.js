@@ -1,17 +1,47 @@
+
+// ================= FIREBASE INIT =================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
 import {
-  auth,
-  db,
+  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
-  onAuthStateChanged,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  arrayUnion
-} from "./firebase.js";
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.9.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBf06m_Y9i8ieLhTrML1cJipAU52_aFebg",
+  authDomain: "support-link-box.firebaseapp.com",
+  projectId: "support-link-box",
+  storageBucket: "support-link-box.appspot.com",
+  messagingSenderId: "1067338452471",
+  appId: "1:1067338452471:web:912353ac976dce6927b2f2"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+
+// ================= SIGNUP =================
+const signupForm = document.getElementById("signupForm");
+
+if (signupForm) {
+  signupForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      alert("Registration Successful");
+      window.location.href = "index.html";
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+}
 
 
 // ================= LOGIN =================
@@ -26,34 +56,10 @@ if (loginForm) {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
+
       alert("Login Successful");
+
       window.location.href = "dashboard.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
-
-
-// ================= SIGNUP =================
-const signupForm = document.getElementById("signupForm");
-
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-
-      await setDoc(doc(db, "users", userCred.user.uid), {
-        links: []
-      });
-
-      alert("Account Created");
-      window.location.href = "index.html";
 
     } catch (err) {
       alert(err.message);
@@ -91,3 +97,11 @@ if (logoutBtn) {
     window.location.href = "index.html";
   });
 }
+
+
+// ================= AUTO CHECK LOGIN =================
+onAuthStateChanged(auth, (user) => {
+  if (!user && window.location.pathname.includes("dashboard")) {
+    window.location.href = "index.html";
+  }
+});
