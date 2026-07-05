@@ -1,100 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Create Account</title>
+<title>Signup</title>
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
-<div class="background"></div>
+<div class="container">
 
-<div class="login-box">
-
-<h1>🌈 CREATE ACCOUNT</h1>
-
-<p class="subtitle">
-
-SUPPORT LINK BOX
-
-</p>
+<h2>SIGN UP</h2>
 
 <form id="signupForm">
 
-<input
-type="email"
-id="email"
-placeholder="Enter Gmail"
-required>
+<input type="email" id="signupEmail" placeholder="Email" required>
 
-<input
-type="password"
-id="password"
-placeholder="Create Password"
-required>
+<input type="password" id="signupPassword" placeholder="Password" required>
 
-<input
-type="password"
-id="confirm"
-placeholder="Confirm Password"
-required>
-
-<button type="submit">
-
-CREATE ACCOUNT
-
-</button>
+<button type="submit">CREATE ACCOUNT</button>
 
 </form>
 
-<div class="bottom">
-
-<p>
-
-Already have an account?
-
-<a href="index.html">
-
-Login
-
-</a>
-
-</p>
-
-</div>
+<p>Already have account? <a href="index.html">Login</a></p>
 
 </div>
 
 <script type="module" src="firebase.js"></script>
-
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 
 </body>
-
 </html>
-const signupForm = document.getElementById("signupForm");
-
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      alert("Account Created");
-      window.location.href = "index.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
